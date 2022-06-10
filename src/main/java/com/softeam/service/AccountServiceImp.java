@@ -37,6 +37,7 @@ public class AccountServiceImp implements AccountService {
     @Override
     public void withdraw(String accountId, BigDecimal amount) {
         // Withdraw from Account
+        performTransaction(accountId, amount, TransactionType.WITHDRAWAL);
     }
 
     @Override
