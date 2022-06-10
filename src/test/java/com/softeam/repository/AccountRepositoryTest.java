@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 public class AccountRepositoryTest {
 
     Map<String, Account> mockAccountList = mock(Map.class);
-    private AccountRepository accountRepository;
+    private AccountRepository accountRepository = new AccountRepositoryImp(mockAccountList);
 
     @Test
     public void testCreate() {
