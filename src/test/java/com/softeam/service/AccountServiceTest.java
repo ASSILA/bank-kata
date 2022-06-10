@@ -10,7 +10,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 
@@ -138,6 +140,31 @@ public class AccountServiceTest {
         when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
 
         accountService.withdraw(accountId, withdrawaAmount);
+
+    }
+
+    @Test
+    public void testGetTransactions() {
+        String accountId ="20-111-3333";
+        TransactionType expectedTransactionType = TransactionType.DEPOSIT;
+        BigDecimal initialBlance = new BigDecimal(0);
+        BigDecimal transactionAmount = new BigDecimal(5);
+        Account expectedAccount = new Account("firstname", "lastname");
+        expectedAccount.setId(accountId);
+        expectedAccount.setBalance(initialBlance);
+
+        expectedAccount.getTransactionList().add(new Transaction(expectedTransactionType, transactionAmount, initialBlance));
+
+        when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
+
+        List<Transaction> transactions = accountService.getTransactions(accountId);
+
+        assertEquals(transactions.size(), 1);
+        Transaction depositTransaction = transactions.get(0);
+        assertEquals(depositTransaction.getType(), expectedTransactionType);
+        assertEquals(depositTransaction.getAmount().intValue(), transactionAmount.intValue(),0);
+        assertEquals(depositTransaction.getInitialBalance().intValue(), initialBlance.intValue(),0);
+
 
     }
 
