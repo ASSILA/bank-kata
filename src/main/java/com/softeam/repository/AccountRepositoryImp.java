@@ -1,6 +1,7 @@
 package com.softeam.repository;
 
 
+import com.softeam.exception.RepositoryException;
 import com.softeam.model.Account;
 
 import java.util.Map;
@@ -16,15 +17,25 @@ public class AccountRepositoryImp implements AccountRepository {
 
     @Override
     public String create(String firstName, String lastName) {
-       return null;
+        Account account = new Account(firstName, lastName);
+        // generate dummy uuid
+        String accountId = UUID.randomUUID().toString();
+        account.setId(accountId);
+
+        this.dummyAccountList.put(accountId, account);
+
+        return accountId;
     }
 
     @Override
     public void save(Account account) {
-        // to save or update an account
+        if (account.getId() == null) {
+            throw new RepositoryException("Save account failed. Error: account id should be set");
+        }
+        this.dummyAccountList.put(account.getId(), account);
     }
-    @Override
+
     public Account getById(String id) {
-        return null;
+        return this.dummyAccountList.get(id);
     }
 }
