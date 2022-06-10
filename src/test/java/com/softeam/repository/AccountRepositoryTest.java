@@ -1,5 +1,6 @@
 package com.softeam.repository;
 
+import com.softeam.exception.RepositoryException;
 import com.softeam.model.Account;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ public class AccountRepositoryTest {
 
     }
 
-    @Test()
+    @Test(expected = RepositoryException.class)
     public void testSaveThrowRepositoryException() {
         Account account = new Account("firstname", "lastname");
         account.setId(null);
