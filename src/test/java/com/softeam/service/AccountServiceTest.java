@@ -1,6 +1,7 @@
 package com.softeam.service;
 
 
+import com.softeam.exception.ServiceException;
 import com.softeam.model.Account;
 import com.softeam.model.Transaction;
 import com.softeam.model.TransactionType;
@@ -15,48 +16,48 @@ import static org.mockito.Mockito.*;
 
 public class AccountServiceTest {
 
-	AccountRepository accountRepository = mock(AccountRepository.class);
+    AccountRepository accountRepository = mock(AccountRepository.class);
     private AccountService accountService = new AccountServiceImp(accountRepository);
-    
-    
+
+
     @Test
     public void testCreateAccount() {
-    	String firstName = "firstname";
-    	String lastName =  "lastname";
-    	String expectedAccountId = "20";
-    	when(accountRepository.create(firstName, lastName)).thenReturn("20");
-    	
-    	String accountId = accountService.createAccount(firstName, lastName);
-    	Assert.assertEquals(accountId,expectedAccountId);
-    	
+        String firstName = "firstname";
+        String lastName = "lastname";
+        String expectedAccountId = "20";
+        when(accountRepository.create(firstName, lastName)).thenReturn("20");
+
+        String accountId = accountService.createAccount(firstName, lastName);
+        Assert.assertEquals(accountId, expectedAccountId);
+
     }
-    
+
     @Test
     public void testGetAccount() {
-    	String accountId ="20";
-    	Account expectedAccount = new Account("firstname", "lastname");
-    	expectedAccount.setId(accountId);
-    	when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
-    	
-    	Account account = accountService.getAccount(accountId);
-    	
-    	Assert.assertEquals(account,expectedAccount);
-    	
+        String accountId = "20";
+        Account expectedAccount = new Account("firstname", "lastname");
+        expectedAccount.setId(accountId);
+        when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
+
+        Account account = accountService.getAccount(accountId);
+
+        Assert.assertEquals(account, expectedAccount);
+
     }
 
     @Test
     public void testDeposit() {
-    	String accountId ="20-111-3333";
-		BigDecimal initialBlance = new BigDecimal(5);
-		BigDecimal depositAmount = new BigDecimal(10);
-		BigDecimal expectedBalanceAfterDeposit = depositAmount.add(initialBlance);
+        String accountId = "20-111-3333";
+        BigDecimal initialBlance = new BigDecimal(5);
+        BigDecimal depositAmount = new BigDecimal(10);
+        BigDecimal expectedBalanceAfterDeposit = depositAmount.add(initialBlance);
 
-    	Account expectedAccount = new Account("firstname", "lastname");
-    	expectedAccount.setId(accountId);
-    	expectedAccount.setBalance(initialBlance);
+        Account expectedAccount = new Account("firstname", "lastname");
+        expectedAccount.setId(accountId);
+        expectedAccount.setBalance(initialBlance);
 
-    	int numberTransactionBeforeDeposit = expectedAccount.getTransactionList().size();
-    	int numberTransactionAfterDeposit = numberTransactionBeforeDeposit +1;
+        int numberTransactionBeforeDeposit = expectedAccount.getTransactionList().size();
+        int numberTransactionAfterDeposit = numberTransactionBeforeDeposit + 1;
 
 
         when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
@@ -76,12 +77,69 @@ public class AccountServiceTest {
         Assert.assertEquals(depositTransaction.getAmount().intValue(), depositAmount.intValue(), 0);
         Assert.assertEquals(depositTransaction.getInitialBalance().intValue(), initialBlance.intValue(), 0);
 
+
         verify(accountRepository).save(any());
     }
 
+    @Test
+    public void testWithdrawal() {
+        String accountId = "20-111-3333";
+        BigDecimal initialBlance = new BigDecimal(10);
+        BigDecimal withdrawaAmount = new BigDecimal(5);
+        BigDecimal expectedBalanceAfterWithdraw = initialBlance.subtract(withdrawaAmount);
+
+        Account expectedAccount = new Account("firstname", "lastname");
+        expectedAccount.setId(accountId);
+        expectedAccount.setBalance(initialBlance);
+
+        int numberTransactionBeforeWithdrawal = expectedAccount.getTransactionList().size();
+        int numberTransactionAfterWithdrawal = numberTransactionBeforeWithdrawal + 1;
 
 
-   
-    
-   
+        when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
+
+        accountService.withdraw(accountId, withdrawaAmount);
+
+        //check balance after withdraw
+        Assert.assertEquals(expectedAccount.getBalance().intValue(), expectedBalanceAfterWithdraw.intValue(), 0);
+
+
+        //check withdraw transaction
+        Assert.assertEquals(expectedAccount.getTransactionList().size(), numberTransactionAfterWithdrawal, 0);
+
+        Transaction depositTransaction = expectedAccount.getTransactionList().get(numberTransactionAfterWithdrawal - 1);
+
+        Assert.assertEquals(depositTransaction.getType(), TransactionType.WITHDRAWAL);
+        Assert.assertEquals(depositTransaction.getAmount().intValue(), withdrawaAmount.intValue(), 0);
+        Assert.assertEquals(depositTransaction.getInitialBalance().intValue(), initialBlance.intValue(), 0);
+
+
+        verify(accountRepository).save(any());
+
+    }
+
+
+    /**
+     * should throw exception because account balance is set to zero for new account and no deposit is done
+     */
+    @Test(expected = ServiceException.class)
+    public void testUnauthorisedWithdrawal() {
+
+
+        String accountId = "20-111-3333";
+        BigDecimal initialBlance = new BigDecimal(3);
+        BigDecimal withdrawaAmount = new BigDecimal(5);
+
+        Account expectedAccount = new Account("firstname", "lastname");
+        expectedAccount.setId(accountId);
+        expectedAccount.setBalance(initialBlance);
+
+
+        when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
+
+        accountService.withdraw(accountId, withdrawaAmount);
+
+    }
+
+
 }
