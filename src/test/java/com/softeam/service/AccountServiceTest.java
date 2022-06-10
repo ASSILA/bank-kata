@@ -76,8 +76,6 @@ public class AccountServiceTest {
         Assert.assertEquals(depositTransaction.getAmount().intValue(), depositAmount.intValue(), 0);
         Assert.assertEquals(depositTransaction.getInitialBalance().intValue(), initialBlance.intValue(), 0);
 
-
-
         verify(accountRepository).save(any());
     }
 
