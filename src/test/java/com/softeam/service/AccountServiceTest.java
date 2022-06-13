@@ -1,7 +1,7 @@
 package com.softeam.service;
 
 
-import com.softeam.exception.ServiceException;
+import com.softeam.exception.InsufficientBalanceException;
 import com.softeam.model.Account;
 import com.softeam.model.Transaction;
 import com.softeam.model.TransactionType;
@@ -21,18 +21,6 @@ public class AccountServiceTest {
     AccountRepository accountRepository = mock(AccountRepository.class);
     private AccountService accountService = new AccountServiceImp(accountRepository);
 
-
-    @Test
-    public void testCreateAccount() {
-        String firstName = "firstname";
-        String lastName = "lastname";
-        String expectedAccountId = "20";
-        when(accountRepository.create(firstName, lastName)).thenReturn("20");
-
-        String accountId = accountService.createAccount(firstName, lastName);
-        Assert.assertEquals(accountId, expectedAccountId);
-
-    }
 
     @Test
     public void testGetAccount() {
@@ -63,6 +51,7 @@ public class AccountServiceTest {
 
 
         when(accountRepository.getById(accountId)).thenReturn(expectedAccount);
+
 
         accountService.deposit(accountId, depositAmount);
 
@@ -124,7 +113,7 @@ public class AccountServiceTest {
     /**
      * should throw exception because account balance is set to zero for new account and no deposit is done
      */
-    @Test(expected = ServiceException.class)
+    @Test(expected = InsufficientBalanceException.class)
     public void testUnauthorisedWithdrawal() {
 
 
@@ -145,7 +134,7 @@ public class AccountServiceTest {
 
     @Test
     public void testGetTransactions() {
-        String accountId ="20-111-3333";
+        String accountId = "20-111-3333";
         TransactionType expectedTransactionType = TransactionType.DEPOSIT;
         BigDecimal initialBlance = new BigDecimal(0);
         BigDecimal transactionAmount = new BigDecimal(5);
@@ -162,8 +151,8 @@ public class AccountServiceTest {
         assertEquals(transactions.size(), 1);
         Transaction depositTransaction = transactions.get(0);
         assertEquals(depositTransaction.getType(), expectedTransactionType);
-        assertEquals(depositTransaction.getAmount().intValue(), transactionAmount.intValue(),0);
-        assertEquals(depositTransaction.getInitialBalance().intValue(), initialBlance.intValue(),0);
+        assertEquals(depositTransaction.getAmount().intValue(), transactionAmount.intValue(), 0);
+        assertEquals(depositTransaction.getInitialBalance().intValue(), initialBlance.intValue(), 0);
 
 
     }
